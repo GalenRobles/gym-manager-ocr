@@ -1,0 +1,111 @@
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--brand);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #fff;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+    .brand-text strong {
+        font-size: 1rem;
+        letter-spacing: .02em;
+    }
+
+    .brand-text small {
+        color: var(--side-text);
+        font-size: .7rem;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+    }
+
+.nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 .75rem;
+}
+
+    .nav-list ::deep a {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem .85rem;
+        border-radius: 8px;
+        color: var(--side-text);
+        text-decoration: none;
+        font-size: .92rem;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color .15s ease, color .15s ease;
+    }
+
+        .nav-list ::deep a:hover {
+            background: var(--side-hover);
+            color: #fff;
+        }
+
+        .nav-list ::deep a.active {
+            background: var(--side-active);
+            color: #fff;
+        }
+
+            .nav-list ::deep a.active::before {
+                content: "";
+                position: absolute;
+                left: -.75rem;
+                top: 20%;
+                bottom: 20%;
+                width: 3px;
+                border-radius: 0 3px 3px 0;
+                background: var(--brand);
+            }
+
+    .nav-list ::deep svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+    }
+
+/* Móvil: menú horizontal */
+@media (max-width: 640.98px) {
+    .brand {
+        padding: .75rem 1rem;
+    }
+
+    .brand-text {
+        display: none;
+    }
+
+    .nav-list {
+        flex-direction: row;
+        padding: 0 .5rem;
+    }
+
+        .nav-list ::deep a.active::before {
+            display: none;
+        }
+}

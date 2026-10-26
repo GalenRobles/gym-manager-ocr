@@ -1,0 +1,129 @@
+﻿@page "/productos"
+@using gym_manager_ocr.Data
+@using gym_manager_ocr.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext DbContext
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold mb-0">Catálogo de Productos</h3>
+        <p class="text-muted mb-0">Gestiona los suplementos y bebidas disponibles</p>
+    </div>
+    <button class="btn btn-danger px-4 py-2 fw-semibold shadow-sm rounded-3">
+        + Nuevo Producto
+    </button>
+</div>
+
+@if (productos == null)
+{
+    <div class="p-5 text-center text-muted">
+        <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+        Cargando catálogo...
+    </div>
+}
+else
+{
+    <!-- Resumen -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="kpi"><div class="kpi-label">Productos</div><div class="kpi-value">@productos.Count</div></div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="kpi"><div class="kpi-label">Stock bajo</div><div class="kpi-value text-warning">@productos.Count(p => p.StockActual > 0 && p.StockActual <= StockBajo)</div></div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="kpi"><div class="kpi-label">Agotados</div><div class="kpi-value text-danger">@productos.Count(p => p.StockActual <= 0)</div></div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <!-- Filtros -->
+        <div class="card-header bg-white border-0 p-3 d-flex flex-wrap gap-2">
+            <input class="form-control" style="max-width: 280px;" placeholder="Buscar producto..."
+                   @bind="busqueda" @bind:event="oninput" />
+            <select class="form-select" style="max-width: 200px;" @bind="categoriaSel">
+                <option value="">Todas las categorías</option>
+                @foreach (var cat in categorias)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-modern mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3 border-0">Producto</th>
+                        <th class="py-3 border-0">Categoría</th>
+                        <th class="py-3 border-0">Precio</th>
+                        <th class="py-3 border-0">Stock teórico</th>
+                        <th class="pe-4 py-3 border-0 text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var prod in Filtrados)
+                    {
+                        var (clase, texto) = EstadoStock(prod.StockActual);
+                        <tr>
+                            <td class="ps-4 py-3 fw-medium">@prod.Nombre</td>
+                            <td class="py-3">
+                                <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">@prod.Categoria</span>
+                            </td>
+                            <td class="py-3 fw-semibold">@prod.PrecioVenta.ToString("C")</td>
+                            <td class="py-3">
+                                <span class="stock-pill @clase">@prod.StockActual pz · @texto</span>
+                            </td>
+                            <td class="pe-4 py-3 text-end">
+                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!Filtrados.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                No se encontraron productos con esos filtros.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private const int StockBajo = 5; // ajusta el umbral a tu negocio
+
+    private List<Producto>? productos;
+    private string busqueda = "";
+    private string categoriaSel = "";
+
+    private IEnumerable<string> categorias =>
+        productos!.Select(p => p.Categoria)
+                  .Where(c => !string.IsNullOrEmpty(c))
+                  .Distinct()
+                  .OrderBy(c => c);
+
+    private IEnumerable<Producto> Filtrados =>
+        productos!.Where(p =>
+            (string.IsNullOrWhiteSpace(busqueda) || p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(categoriaSel) || p.Categoria == categoriaSel));
+
+    private static (string clase, string texto) EstadoStock(int stock) => stock switch
+    {
+        <= 0 => ("stock-out", "Agotado"),
+        <= StockBajo => ("stock-low", "Bajo"),
+        _ => ("stock-ok", "Disponible")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await DbContext.Productos
+            .AsNoTracking()
+            .OrderBy(p => p.Nombre)
+            .ToListAsync();
+    }
+}

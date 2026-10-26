@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+@using System.Globalization
+
+<div class="page">
+    <aside class="sidebar">
+        <NavMenu />
+    </aside>
+
+    <main>
+        <header class="top-row">
+            <span class="today">@DateTime.Now.ToString("dddd, d 'de' MMMM", new CultureInfo("es-MX"))</span>
+            <span class="week-badge">Semana activa</span>
+        </header>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    Ocurrió un error.
+    <a href="" class="reload">Recargar</a>
+    <a class="dismiss">🗙</a>
+</div>
